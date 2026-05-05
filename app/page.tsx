@@ -422,7 +422,7 @@ export default function AdGeneratorApp() {
 
             <div className="p-6 bg-zinc-900 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
               <p className="text-zinc-400 text-sm">
-                A imagem não baixou automaticamente? No celular/desktop, pressione e segure ou clique com o botão direito na imagem e escolha "Salvar imagem".
+                A imagem não baixou automaticamente? No celular/desktop, pressione e segure ou clique com o botão direito na imagem e escolha &quot;Salvar imagem&quot;.
               </p>
               <a 
                 href={exportedImage} 
