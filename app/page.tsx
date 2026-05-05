@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
-import html2canvas from 'html2canvas';
+import { toBlob } from 'html-to-image';
 import { Upload, Download, Settings, FileImage, Image as ImageIcon, Phone, Instagram, X } from 'lucide-react';
 
 export default function AdGeneratorApp() {
@@ -57,34 +57,32 @@ export default function AdGeneratorApp() {
     try {
       setIsExporting(true);
       // scale: 1 is enough because we are rendering a native 1080x1080 element
-      const canvas = await html2canvas(previewRef.current, {
-        scale: 1, 
-        useCORS: true,
-        backgroundColor: null,
+      const blob = await toBlob(previewRef.current, {
+        pixelRatio: 1, 
       });
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          alert('Erro ao processar imagem.');
-          return;
-        }
-        const url = URL.createObjectURL(blob);
-        setExportedImage(url); // Mostra o modal com a imagem
+      
+      if (!blob) {
+        alert('Erro ao processar imagem. Use formato ou navegadores suportados.');
+        return;
+      }
+      
+      const url = URL.createObjectURL(blob);
+      setExportedImage(url); // Mostra o modal com a imagem
 
-        const link = document.createElement('a');
-        link.href = url;
-        const fallbackName = 'moto';
-        const formattedName = modelo ? modelo.trim().replace(/\s+/g, '-').toLowerCase() : fallbackName;
-        link.download = `anuncio-${formattedName}.png`;
-        
-        try {
-          // Tenta baixar a imagem
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        } catch (e) {
-          console.warn("Download automático bloqueado pelo navegador.");
-        }
-      }, 'image/png', 1.0);
+      const link = document.createElement('a');
+      link.href = url;
+      const fallbackName = 'moto';
+      const formattedName = modelo ? modelo.trim().replace(/\s+/g, '-').toLowerCase() : fallbackName;
+      link.download = `anuncio-${formattedName}.png`;
+      
+      try {
+        // Tenta baixar a imagem
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (e) {
+        console.warn("Download automático bloqueado pelo navegador.");
+      }
     } catch (error) {
       console.error('Failed to export image', error);
       alert('Erro ao gerar a imagem. Tente novamente.');
