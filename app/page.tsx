@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import html2canvas from 'html2canvas';
-import { Upload, Download, Settings, FileImage, Image as ImageIcon, Phone, Instagram } from 'lucide-react';
+import { Upload, Download, Settings, FileImage, Image as ImageIcon, Phone, Instagram, X } from 'lucide-react';
 
 export default function AdGeneratorApp() {
   const [logo, setLogo] = useState<string | null>(null);
@@ -21,7 +21,23 @@ export default function AdGeneratorApp() {
   const [instagram, setInstagram] = useState('@sualoja_motos');
 
   const previewRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [exportedImage, setExportedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (containerRef.current) {
+        // max width is usually around 800px or determined by parent
+        const width = containerRef.current.clientWidth;
+        setScale(width / 1080);
+      }
+    };
+    updateScale();
+    window.addEventListener('resize', updateScale);
+    return () => window.removeEventListener('resize', updateScale);
+  }, []);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, setter: (val: string) => void) => {
     const file = e.target.files?.[0];
@@ -40,8 +56,9 @@ export default function AdGeneratorApp() {
     if (!previewRef.current) return;
     try {
       setIsExporting(true);
+      // scale: 1 is enough because we are rendering a native 1080x1080 element
       const canvas = await html2canvas(previewRef.current, {
-        scale: 2, // High resolution
+        scale: 1, 
         useCORS: true,
         backgroundColor: null,
       });
@@ -51,15 +68,22 @@ export default function AdGeneratorApp() {
           return;
         }
         const url = URL.createObjectURL(blob);
+        setExportedImage(url); // Mostra o modal com a imagem
+
         const link = document.createElement('a');
         link.href = url;
         const fallbackName = 'moto';
         const formattedName = modelo ? modelo.trim().replace(/\s+/g, '-').toLowerCase() : fallbackName;
         link.download = `anuncio-${formattedName}.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        
+        try {
+          // Tenta baixar a imagem
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (e) {
+          console.warn("Download automático bloqueado pelo navegador.");
+        }
       }, 'image/png', 1.0);
     } catch (error) {
       console.error('Failed to export image', error);
@@ -241,19 +265,29 @@ export default function AdGeneratorApp() {
               </button>
             </div>
 
-            {/* O Container do Anuncio a ser gerado. Ele usa aspect-square para ter um formato quadrado nativo (tipo Instagram),
-                O layout utiliza as cores base preto/cinza e amarelo que representam muito bem motos elétricas. 
-                Utiliza container queries e percentuais p/ renderizar bem independentemente do tamanho na tela */}
-            <div className="w-full max-w-[800px] border shadow-2xl rounded-sm overflow-hidden bg-zinc-200 aspect-square flex @container">
+            {/* O Container de Base Escalonável */}
+            <div 
+              ref={containerRef}
+              className="w-full max-w-[800px] border shadow-2xl rounded-sm overflow-hidden bg-zinc-200 aspect-square relative"
+            >
+              {/* O Container Físico (Sempre 1080x1080, para exportação perfeita sem @container/cqw) */}
               <div 
-                ref={previewRef} 
-                className="w-full h-full relative overflow-hidden font-sans"
+                className="absolute top-0 left-0 origin-top-left"
                 style={{ 
-                  // Fallback bg colors se a imagem não for providenciada
-                  backgroundColor: '#161618',
+                  width: '1080px', 
+                  height: '1080px', 
+                  transform: `scale(${scale})` 
                 }}
               >
-                {/* Imagem de Fundo customizada (se existir) */}
+                <div 
+                  ref={previewRef} 
+                  className="w-full h-full relative overflow-hidden font-sans"
+                  style={{ 
+                    // Fallback bg colors se a imagem não for providenciada
+                    backgroundColor: '#161618',
+                  }}
+                >
+                  {/* Imagem de Fundo customizada (se existir) */}
                 {bgImage ? (
                   <div 
                     className="absolute inset-0 bg-cover bg-center z-0" 
@@ -276,12 +310,12 @@ export default function AdGeneratorApp() {
                   
                   {/* Cabeçalho */}
                   <div className="flex justify-between items-start w-full gap-4">
-                    {/* Logomarca */}
-                    <div className="h-[15cqw] max-w-[60cqw] min-w-[20cqw] flex items-start shrink-0">
+                    {/* Logomarca - Aumentado o tamanho consideravelmente */}
+                    <div className="h-[250px] max-w-[650px] min-w-[300px] flex items-start shrink-0">
                       {logo ? (
                         <img src={logo} alt="Logo" className="max-h-full max-w-full object-contain object-left-top drop-shadow-md" />
                       ) : (
-                        <div className="text-white text-[3cqw] font-black italic tracking-widest border-[0.3cqw] border-white px-[2cqw] py-[1cqw]">SUA LOGO</div>
+                        <div className="text-white text-[38px] font-black italic tracking-widest border-[4px] border-white px-[25px] py-[12px]">SUA LOGO</div>
                       )}
                     </div>
                   </div>
@@ -302,13 +336,13 @@ export default function AdGeneratorApp() {
 
                     {/* Textos Esquerda */}
                     <div className="w-[50%] h-full flex flex-col justify-center z-30 pt-[5%]">
-                      <h3 className="text-yellow-400 font-bold uppercase tracking-widest mb-1 text-[2cqw] leading-none">{marca}</h3>
-                      <h1 className="text-white font-black italic uppercase leading-none mb-4 text-[6cqw] drop-shadow-lg">
+                      <h3 className="text-yellow-400 font-bold uppercase tracking-widest mb-1 text-[22px] leading-none">{marca}</h3>
+                      <h1 className="text-white font-black italic uppercase leading-none mb-4 text-[65px] drop-shadow-lg">
                         {modelo}
                       </h1>
                       
                       <div className="bg-zinc-950/80 backdrop-blur-md p-4 rounded-xl border-l-4 border-yellow-500 shadow-xl mb-4 w-[110%]">
-                        <ul className="text-zinc-200 space-y-2 text-[1.8cqw] font-medium">
+                        <ul className="text-zinc-200 space-y-2 text-[20px] font-medium">
                           {caracteristicas.split('\n').map((linha, index) => (
                             <li key={index} className="flex gap-2">
                               <span></span> {linha}
@@ -318,7 +352,7 @@ export default function AdGeneratorApp() {
                       </div>
 
                       {infoExtra && (
-                        <div className="text-zinc-400 text-[1.4cqw] italic bg-zinc-900/60 p-2 rounded max-w-xs leading-tight border border-zinc-800">
+                        <div className="text-zinc-400 text-[15px] italic bg-zinc-900/60 p-2 rounded max-w-xs leading-tight border border-zinc-800">
                           {infoExtra}
                         </div>
                       )}
@@ -329,12 +363,12 @@ export default function AdGeneratorApp() {
                   <div className="w-full mt-auto mb-2 flex items-end justify-between z-30">
                     <div className="flex flex-col bg-yellow-500 rounded-xl px-6 py-3 shadow-[0_10px_30px_rgba(234,179,8,0.3)] border-2 border-yellow-400 transform -skew-x-[10deg] ml-4">
                       <div className="transform skew-x-[10deg]">
-                        <span className="block text-zinc-900 text-[1.8cqw] font-bold uppercase tracking-wider mb-1">Por apenas:</span>
-                        <div className="text-zinc-950 text-[4cqw] font-black italic leading-none whitespace-nowrap">
+                        <span className="block text-zinc-900 text-[19px] font-bold uppercase tracking-wider mb-1">Por apenas:</span>
+                        <div className="text-zinc-950 text-[45px] font-black italic leading-none whitespace-nowrap">
                           {valorVista}
                         </div>
                         {valorParcelado && (
-                          <div className="mt-1 text-zinc-800 font-bold text-[2cqw] bg-yellow-400 inline-block px-2 rounded-md">
+                          <div className="mt-1 text-zinc-800 font-bold text-[22px] bg-yellow-400 inline-block px-2 rounded-md">
                             ou {valorParcelado}
                           </div>
                         )}
@@ -345,14 +379,14 @@ export default function AdGeneratorApp() {
                     <div className="flex flex-col items-end gap-3 text-white">
                       {telefone && (
                         <div className="flex items-center justify-center gap-3 bg-zinc-950/80 backdrop-blur-md px-4 py-2.5 rounded-l-full rounded-r-lg border-r-4 border-yellow-500 shadow-xl w-[fit-content]">
-                          <Phone className="w-[2.5cqw] h-[2.5cqw] text-yellow-400" />
-                          <span className="font-bold text-[2.2cqw] tracking-wide">{telefone}</span>
+                          <Phone className="w-[28px] h-[28px] text-yellow-400" />
+                          <span className="font-bold text-[24px] tracking-wide">{telefone}</span>
                         </div>
                       )}
                       {instagram && (
                         <div className="flex items-center justify-center gap-3 bg-zinc-950/80 backdrop-blur-md px-4 py-2.5 rounded-l-full rounded-r-lg border-r-4 border-yellow-500 shadow-xl w-[fit-content]">
-                          <Instagram className="w-[2.5cqw] h-[2.5cqw] text-yellow-400" />
-                          <span className="font-bold text-[2.2cqw] tracking-wide">{instagram}</span>
+                          <Instagram className="w-[28px] h-[28px] text-yellow-400" />
+                          <span className="font-bold text-[24px] tracking-wide">{instagram}</span>
                         </div>
                       )}
                     </div>
@@ -361,6 +395,7 @@ export default function AdGeneratorApp() {
                 </div>
               </div>
             </div>
+            </div>
 
             <p className="mt-4 text-zinc-500 text-sm italic">
               A imagem será baixada em alta resolução para que os textos e a moto fiquem super nítidos.
@@ -368,6 +403,41 @@ export default function AdGeneratorApp() {
           </div>
         </div>
       </div>
+
+      {/* Modal para Download Manual caso o navegador bloqueie*/}
+      {exportedImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-zinc-900 rounded-2xl shadow-2xl overflow-hidden max-w-[800px] w-full flex flex-col max-h-full">
+            <div className="flex justify-between items-center p-4 border-b border-zinc-800">
+              <h3 className="text-xl font-bold text-white">Imagem Pronta!</h3>
+              <button 
+                onClick={() => setExportedImage(null)}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-auto flex items-center justify-center bg-zinc-950/50">
+              <img src={exportedImage} alt="Anúncio Exportado" className="max-h-[60vh] object-contain shadow-[0_0_50px_rgba(0,0,0,0.5)]" />
+            </div>
+
+            <div className="p-6 bg-zinc-900 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
+              <p className="text-zinc-400 text-sm">
+                A imagem não baixou automaticamente? No celular/desktop, pressione e segure ou clique com o botão direito na imagem e escolha "Salvar imagem".
+              </p>
+              <a 
+                href={exportedImage} 
+                download={`anuncio-${modelo ? modelo.trim().replace(/\s+/g, '-').toLowerCase() : 'moto'}.png`}
+                className="bg-yellow-500 hover:bg-yellow-600 text-zinc-950 font-bold py-2 px-8 rounded-full transition-colors flex items-center gap-2 whitespace-nowrap shrink-0"
+              >
+                <Download className="w-5 h-5" />
+                Tentar Download
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
