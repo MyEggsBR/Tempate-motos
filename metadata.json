@@ -1,0 +1,6 @@
+{
+  "name": "Gerador de Anúncios de Motos",
+  "description": "Gerador de templates de vendas para motos elétricas com background customizável e download de imagem.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
