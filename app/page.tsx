@@ -45,11 +45,22 @@ export default function AdGeneratorApp() {
         useCORS: true,
         backgroundColor: null,
       });
-      const imageUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.href = imageUrl;
-      link.download = `anuncio-${modelo.replace(/\s+/g, '-').toLowerCase()}.png`;
-      link.click();
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          alert('Erro ao processar imagem.');
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        const fallbackName = 'moto';
+        const formattedName = modelo ? modelo.trim().replace(/\s+/g, '-').toLowerCase() : fallbackName;
+        link.download = `anuncio-${formattedName}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      }, 'image/png', 1.0);
     } catch (error) {
       console.error('Failed to export image', error);
       alert('Erro ao gerar a imagem. Tente novamente.');
@@ -266,11 +277,11 @@ export default function AdGeneratorApp() {
                   {/* Cabeçalho */}
                   <div className="flex justify-between items-start w-full gap-4">
                     {/* Logomarca */}
-                    <div className="h-16 w-48 flex items-center shrink-0">
+                    <div className="h-[15cqw] max-w-[60cqw] min-w-[20cqw] flex items-start shrink-0">
                       {logo ? (
-                        <img src={logo} alt="Logo" className="max-h-full max-w-full object-contain drop-shadow-md" />
+                        <img src={logo} alt="Logo" className="max-h-full max-w-full object-contain object-left-top drop-shadow-md" />
                       ) : (
-                        <div className="text-white text-xl font-black italic tracking-widest border-2 border-white px-3 py-1">SUA LOGO</div>
+                        <div className="text-white text-[3cqw] font-black italic tracking-widest border-[0.3cqw] border-white px-[2cqw] py-[1cqw]">SUA LOGO</div>
                       )}
                     </div>
                   </div>
