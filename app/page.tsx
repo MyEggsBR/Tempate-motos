@@ -14,11 +14,11 @@ export default function AdGeneratorApp() {
   const [caracteristicas, setCaracteristicas] = useState(
     '✔️ Motor Elétrico 3000W\n✔️ Velocidade máx: 80km/h\n✔️ Autonomia de 60km\n✔️ Painel Digital\n✔️ Freios a disco'
   );
-  const [infoExtra, setInfoExtra] = useState('Sem necessidade de CNH* (verifique a legislação local). Ideal para o dia a dia na cidade!');
+  const [infoExtra, setInfoExtra] = useState('Sem necessidade de CNH ou pagamento de IPVA. Bateria de Lítio, sem risco de "viciar" Ideal para o dia a dia na cidade!');
   const [valorVista, setValorVista] = useState('R$ 14.990,00');
   const [valorParcelado, setValorParcelado] = useState('12x de R$ 1.350,00');
-  const [telefone, setTelefone] = useState('(11) 99999-9999');
-  const [instagram, setInstagram] = useState('@sualoja_motos');
+  const [telefone, setTelefone] = useState('(63) 99260-8810');
+  const [instagram, setInstagram] = useState('@TRIVOLTS.MOTORS');
 
   const [motoScale, setMotoScale] = useState(1);
   const [motoOffsetX, setMotoOffsetX] = useState(0);
