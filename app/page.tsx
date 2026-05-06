@@ -20,6 +20,10 @@ export default function AdGeneratorApp() {
   const [telefone, setTelefone] = useState('(11) 99999-9999');
   const [instagram, setInstagram] = useState('@sualoja_motos');
 
+  const [motoScale, setMotoScale] = useState(1);
+  const [motoOffsetX, setMotoOffsetX] = useState(0);
+  const [motoOffsetY, setMotoOffsetY] = useState(0);
+
   const previewRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -141,6 +145,54 @@ export default function AdGeneratorApp() {
                     <span className="text-yellow-700 font-medium">Fazer Upload da Moto</span>
                     <span className="text-yellow-600 text-xs mt-1 text-center">Recomendado: PNG com fundo transparente</span>
                   </label>
+
+                  {motoImage && (
+                    <div className="mt-4 p-4 bg-zinc-50 border border-zinc-200 rounded-xl space-y-4">
+                      <h3 className="text-sm font-semibold text-zinc-700 mb-2 flex justify-between items-center">
+                        Ajuste da Moto
+                        <button 
+                          onClick={() => { setMotoScale(1); setMotoOffsetX(0); setMotoOffsetY(0); }}
+                          className="text-xs font-normal text-zinc-500 hover:text-zinc-800 underline"
+                        >
+                          Resetar
+                        </button>
+                      </h3>
+                      <div>
+                        <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                          <span>Tamanho</span>
+                          <span>{Math.round(motoScale * 100)}%</span>
+                        </div>
+                        <input 
+                          type="range" min="0.3" max="2.5" step="0.05" 
+                          value={motoScale} 
+                          onChange={(e) => setMotoScale(parseFloat(e.target.value))} 
+                          className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-yellow-500" 
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                          <span>Posição Horizontal</span>
+                        </div>
+                        <input 
+                          type="range" min="-100" max="100" step="1" 
+                          value={motoOffsetX} 
+                          onChange={(e) => setMotoOffsetX(parseFloat(e.target.value))} 
+                          className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-yellow-500" 
+                        />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-xs text-zinc-500 mb-1">
+                          <span>Posição Vertical</span>
+                        </div>
+                        <input 
+                          type="range" min="-100" max="100" step="1" 
+                          value={motoOffsetY} 
+                          onChange={(e) => setMotoOffsetY(parseFloat(e.target.value))} 
+                          className="w-full h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer accent-yellow-500" 
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -322,9 +374,17 @@ export default function AdGeneratorApp() {
                   <div className="relative flex-1 flex my-4">
                     
                     {/* Imagem da Moto */}
-                    <div className="absolute w-[60%] h-full right-[-5%] bottom-0 flex items-end justify-center z-20">
+                    <div className="absolute w-[60%] h-full right-[-5%] bottom-0 flex items-end justify-center z-20 pointer-events-none">
                       {motoImage ? (
-                        <img src={motoImage} alt="Moto Elétrica" className="max-h-[110%] w-auto object-contain drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]" />
+                        <img 
+                          src={motoImage} 
+                          alt="Moto Elétrica" 
+                          className="w-auto drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]" 
+                          style={{
+                            maxHeight: '110%',
+                            transform: `scale(${motoScale}) translate(${motoOffsetX}%, ${motoOffsetY}%)`
+                          }}
+                        />
                       ) : (
                         <div className="w-full h-3/4 border-4 border-dashed border-zinc-600 rounded-xl flex items-center justify-center text-zinc-500 bg-zinc-800/50 backdrop-blur-sm -rotate-6">
                             Foto da Moto Aqui
