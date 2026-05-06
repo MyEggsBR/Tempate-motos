@@ -399,7 +399,7 @@ export default function AdGeneratorApp() {
                         {modelo}
                       </h1>
                       
-                      <div className="bg-zinc-950/80 backdrop-blur-md p-4 rounded-xl border-l-4 border-yellow-500 shadow-xl mb-4 w-[110%]">
+                      <div className="bg-zinc-950/80 backdrop-blur-md p-4 rounded-xl border-l-4 border-yellow-500 shadow-xl mb-4 w-[fit-content] pr-8 whitespace-nowrap">
                         <ul className="text-zinc-200 space-y-2 text-[20px] font-medium">
                           {caracteristicas.split('\n').map((linha, index) => (
                             <li key={index} className="flex gap-2">
